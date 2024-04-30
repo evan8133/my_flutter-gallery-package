@@ -135,7 +135,7 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
             imageUrl: item.imageUrl,
             loadingWidget: widget.loadingWidget,
             errorWidget: widget.errorWidget,
-            radius: widget.radius,
+            radius: 0,
           ),
         ),
       ),
