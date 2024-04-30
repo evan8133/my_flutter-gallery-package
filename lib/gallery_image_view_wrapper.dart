@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:galleryimage/app_cached_network_image.dart';
 
 import 'gallery_item_model.dart';
@@ -14,6 +17,8 @@ class GalleryImageViewWrapper extends StatefulWidget {
   final double minScale;
   final double maxScale;
   final double radius;
+  final Color closeIconColor;
+  final Color closeIconBackgroundColor;
   final bool reverse;
   final bool showListInGalley;
   final bool showAppBar;
@@ -27,6 +32,8 @@ class GalleryImageViewWrapper extends StatefulWidget {
     required this.initialIndex,
     required this.galleryItems,
     required this.loadingWidget,
+    required this.closeIconColor,
+    required this.closeIconBackgroundColor,
     required this.errorWidget,
     required this.minScale,
     required this.maxScale,
@@ -76,48 +83,84 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
           : null,
       backgroundColor: widget.backgroundColor,
       body: SafeArea(
-        child: Container(
-          constraints:
-              BoxConstraints.expand(height: MediaQuery.of(context).size.height),
-          child: Column(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onVerticalDragEnd: (details) {
-                    if (widget.closeWhenSwipeUp &&
-                        details.primaryVelocity! < 0) {
-                      //'up'
-                      Navigator.of(context).pop();
-                    }
-                    if (widget.closeWhenSwipeDown &&
-                        details.primaryVelocity! > 0) {
-                      // 'down'
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: PageView.builder(
-                    reverse: widget.reverse,
-                    controller: _controller,
-                    itemCount: widget.galleryItems.length,
-                    itemBuilder: (context, index) =>
-                        _buildImage(widget.galleryItems[index]),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: AppCachedNetworkImage(
+                  fit: BoxFit.cover,
+                  imageUrl: widget.galleryItems[_currentPage].imageUrl,
+                  loadingWidget: widget.loadingWidget,
+                  errorWidget: widget.errorWidget,
+                  radius: 0,
+                ),
+              ),
+            ),
+            Container(
+              constraints: BoxConstraints.expand(
+                  height: MediaQuery.of(context).size.height),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onVerticalDragEnd: (details) {
+                        if (widget.closeWhenSwipeUp &&
+                            details.primaryVelocity! < 0) {
+                          //'up'
+                          Navigator.of(context).pop();
+                        }
+                        if (widget.closeWhenSwipeDown &&
+                            details.primaryVelocity! > 0) {
+                          // 'down'
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      child: PageView.builder(
+                        reverse: widget.reverse,
+                        controller: _controller,
+                        itemCount: widget.galleryItems.length,
+                        itemBuilder: (context, index) => Padding(
+                            padding: EdgeInsets.all(15),
+                            child: _buildImage(widget.galleryItems[index])),
+                      ),
+                    ),
+                  ),
+                  if (widget.showListInGalley)
+                    SizedBox(
+                      height: 80,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: widget.galleryItems
+                              .map((e) => _buildLitImage(e))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 20,
+              right: 20,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: widget.closeIconBackgroundColor,
+                      shape: BoxShape.circle),
+                  child: Icon(
+                    Icons.close,
+                    color: widget.closeIconColor,
                   ),
                 ),
               ),
-              if (widget.showListInGalley)
-                SizedBox(
-                  height: 80,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: widget.galleryItems
-                          .map((e) => _buildLitImage(e))
-                          .toList(),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -135,7 +178,7 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
             imageUrl: item.imageUrl,
             loadingWidget: widget.loadingWidget,
             errorWidget: widget.errorWidget,
-            radius: 0,
+            radius: 5,
           ),
         ),
       ),
