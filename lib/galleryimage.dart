@@ -109,31 +109,36 @@ class _GalleryImageState extends State<GalleryImage> {
       onTap: () {
         _openImageFullScreen(index);
       },
-      child: Stack(
-        alignment: AlignmentDirectional.center,
-        fit: StackFit.expand,
-        children: <Widget>[
-          GalleryItemThumbnail(
-            galleryItem: galleryItems[index],
-            loadingWidget: widget.loadingWidget,
-            errorWidget: widget.errorWidget,
-            onTap: null,
-            radius: widget.imageRadius,
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(widget.imageRadius)),
-            child: ColoredBox(
-              color: widget.colorOfNumberWidget ?? Colors.black.withOpacity(.7),
-              child: Center(
-                child: Text(
-                  "+${galleryItems.length - index}",
-                  style: widget.textStyleOfNumberWidget ??
-                      const TextStyle(color: Colors.white, fontSize: 40),
+      child: Container(
+        height: 90,
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          fit: StackFit.expand,
+          children: <Widget>[
+            GalleryItemThumbnail(
+              galleryItem: galleryItems[index],
+              loadingWidget: widget.loadingWidget,
+              errorWidget: widget.errorWidget,
+              onTap: null,
+              radius: widget.imageRadius,
+            ),
+            ClipRRect(
+              borderRadius:
+                  BorderRadius.all(Radius.circular(widget.imageRadius)),
+              child: ColoredBox(
+                color:
+                    widget.colorOfNumberWidget ?? Colors.black.withOpacity(.7),
+                child: Center(
+                  child: Text(
+                    "+${galleryItems.length - index}",
+                    style: widget.textStyleOfNumberWidget ??
+                        const TextStyle(color: Colors.white, fontSize: 40),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
