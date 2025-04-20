@@ -1,14 +1,19 @@
 library galleryimage;
 
-import 'package:flutter/material.dart';
+import 'dart:typed_data'; // Import for cache type
 
-import 'gallery_item_model.dart';
-import 'gallery_item_thumbnail.dart';
+import 'package:flutter/material.dart';
+import 'package:path/path.dart'
+    as p; // Import path package for extension checking
+
 import './gallery_image_view_wrapper.dart';
 import './util.dart';
+import 'gallery_item_model.dart';
+import 'gallery_item_thumbnail.dart';
 
 class GalleryImage extends StatefulWidget {
-  final List<String> imageUrls;
+  // Renamed imageUrls to urls to reflect support for multiple media types
+  final List<String> urls;
   final String? titleGallery;
   final int numOfShowImages;
   final int crossAxisCount;
@@ -34,7 +39,7 @@ class GalleryImage extends StatefulWidget {
 
   const GalleryImage({
     Key? key,
-    required this.imageUrls,
+    required this.urls, // Updated parameter name
     this.titleGallery,
     this.childAspectRatio = 1,
     this.crossAxisCount = 3,
@@ -57,7 +62,7 @@ class GalleryImage extends StatefulWidget {
     this.closeWhenSwipeDown = false,
     this.closeIconColor = Colors.white,
     this.closeIconBackgroundColor = Colors.black,
-  })  : assert(numOfShowImages <= imageUrls.length),
+  })  : assert(numOfShowImages <= urls.length), // Updated assertion
         super(key: key);
   @override
   State<GalleryImage> createState() => _GalleryImageState();
@@ -65,9 +70,12 @@ class GalleryImage extends StatefulWidget {
 
 class _GalleryImageState extends State<GalleryImage> {
   List<GalleryItemModel> galleryItems = <GalleryItemModel>[];
+  // Add a cache for video thumbnails
+  final Map<String, Uint8List> _thumbnailCache = {};
+
   @override
   void initState() {
-    _buildItemsList(widget.imageUrls);
+    _buildItemsList(widget.urls); // Updated to use widget.urls
     super.initState();
   }
 
@@ -89,10 +97,13 @@ class _GalleryImageState extends State<GalleryImage> {
             ),
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
+              // Pass the correct gallery item (which now includes isVideo flag)
+              // Also pass the thumbnail cache
               return _isLastItem(index)
                   ? _buildImageNumbers(index)
                   : GalleryItemThumbnail(
-                      galleryItem: galleryItems[index],
+                      galleryItem: galleryItems[index], // Pass the model
+                      thumbnailCache: _thumbnailCache, // Pass the cache
                       onTap: () {
                         _openImageFullScreen(index);
                       },
@@ -113,20 +124,26 @@ class _GalleryImageState extends State<GalleryImage> {
         alignment: AlignmentDirectional.center,
         fit: StackFit.expand,
         children: <Widget>[
+          // Use the updated GalleryItemThumbnail which will handle video/image
+          // Pass the thumbnail cache
           GalleryItemThumbnail(
-            galleryItem: galleryItems[index],
+            galleryItem: galleryItems[index], // Pass the model
+            thumbnailCache: _thumbnailCache, // Pass the cache
             loadingWidget: widget.loadingWidget,
             errorWidget: widget.errorWidget,
-            onTap: null,
+            onTap: null, // onTap is handled by the GestureDetector above
             radius: widget.imageRadius,
           ),
           ClipRRect(
             borderRadius: BorderRadius.all(Radius.circular(widget.imageRadius)),
             child: ColoredBox(
-              color: widget.colorOfNumberWidget ?? Colors.black.withOpacity(.7),
+              // Fixed deprecated withOpacity
+              color: widget.colorOfNumberWidget ??
+                  Colors.black.withAlpha((255 * 0.7).round()),
               child: Center(
                 child: Text(
-                  "+${galleryItems.length - index}",
+                  // Display remaining count correctly
+                  "+${galleryItems.length - widget.numOfShowImages + 1}",
                   style: widget.textStyleOfNumberWidget ??
                       const TextStyle(color: Colors.white, fontSize: 40),
                 ),
@@ -140,20 +157,23 @@ class _GalleryImageState extends State<GalleryImage> {
 
 // Check if item is last image in grid to view image or number
   bool _isLastItem(int index) {
-    return index < galleryItems.length - 1 &&
+    // Show the number overlay only on the last visible thumbnail
+    // when there are more items than shown.
+    return galleryItems.length > widget.numOfShowImages &&
         index == widget.numOfShowImages - 1;
   }
 
-// to open gallery image in full screen
-  Future<void> _openImageFullScreen(int indexOfImage) async {
+// to open gallery image/video in full screen
+  Future<void> _openImageFullScreen(int indexOfItem) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
+        // GalleryImageViewWrapper will need updates to handle video
         builder: (context) => GalleryImageViewWrapper(
           titleGallery: widget.titleGallery,
-          galleryItems: galleryItems,
+          galleryItems: galleryItems, // Pass the updated list
           backgroundColor: widget.galleryBackgroundColor,
-          initialIndex: indexOfImage,
+          initialIndex: indexOfItem,
           loadingWidget: widget.loadingWidget,
           errorWidget: widget.errorWidget,
           maxScale: widget.maxScale,
@@ -166,17 +186,52 @@ class _GalleryImageState extends State<GalleryImage> {
           radius: widget.imageRadius,
           closeIconColor: widget.closeIconColor,
           closeIconBackgroundColor: widget.closeIconBackgroundColor,
+          thumbnailCache: _thumbnailCache, // Pass the cache
         ),
       ),
     );
+  }
+
+  // List of common video file extensions
+  final _videoExtensions = {
+    '.mp4',
+    '.mov',
+    '.avi',
+    '.mkv',
+    '.wmv',
+    '.flv',
+    '.webm'
+  };
+
+  // Checks if the url string likely points to a video file
+  bool _isVideoUrl(String url) {
+    try {
+      // Use Uri.parse to handle potential query parameters or fragments
+      final uri = Uri.parse(url);
+      // Get the extension from the path component of the URI
+      final extension = p.extension(uri.path).toLowerCase();
+      return _videoExtensions.contains(extension);
+    } catch (e) {
+      // Handle potential parsing errors if the URL is malformed
+      print("Error parsing URL $url: $e");
+      return false;
+    }
   }
 
 // clear and build list
   void _buildItemsList(List<String> items) {
     galleryItems.clear();
     for (var item in items) {
+      final isVideo = _isVideoUrl(item); // Check if it's a video URL
+      final index = items.indexOf(item); // Get index for unique ID
       galleryItems.add(
-        GalleryItemModel(id: item, imageUrl: item, index: items.indexOf(item)),
+        GalleryItemModel(
+          // Create a unique ID using url and index for the Hero tag
+          id: '$item-$index',
+          url: item, // Use the updated 'url' field
+          index: index,
+          isVideo: isVideo, // Set the isVideo flag
+        ),
       );
     }
   }
