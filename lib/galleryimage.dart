@@ -149,8 +149,8 @@ class _GalleryImageState extends State<GalleryImage> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
