@@ -42,7 +42,7 @@ class MyHomePage extends StatelessWidget {
                 padding: const EdgeInsets.all(10.0),
                 child: GalleryImage(
                   numOfShowImages: 6,
-                  imageUrls: const [
+                  urls: const [
                     "https://cosmosmagazine.com/wp-content/uploads/2020/02/191010_nature.jpg",
                     "https://scx2.b-cdn.net/gfx/news/hires/2019/2-nature.jpg",
                     "https://wallpapers.com/images/featured/2ygv7ssy2k0lxlzu.jpg",

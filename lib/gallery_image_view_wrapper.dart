@@ -1,7 +1,7 @@
-import 'dart:typed_data'; // Add missing import
 import 'dart:ui';
 
 import 'package:chewie/chewie.dart'; // Add Chewie import
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:galleryimage/app_cached_network_image.dart';
 import 'package:video_player/video_player.dart'; // Add VideoPlayer import
@@ -30,7 +30,7 @@ class GalleryImageViewWrapper extends StatefulWidget {
   final Map<String, Uint8List> thumbnailCache; // Add cache parameter
 
   const GalleryImageViewWrapper({
-    Key? key,
+    super.key,
     required this.titleGallery,
     required this.backgroundColor,
     required this.initialIndex,
@@ -48,7 +48,7 @@ class GalleryImageViewWrapper extends StatefulWidget {
     required this.showAppBar,
     required this.closeWhenSwipeUp,
     required this.closeWhenSwipeDown,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -97,8 +97,9 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
 
   // Initialize video controller only if the item is a video
   Future<void> _initializeVideoControllerIfNeeded(int index) async {
-    if (index < 0 || index >= widget.galleryItems.length)
+    if (index < 0 || index >= widget.galleryItems.length) {
       return; // Bounds check
+    }
 
     final item = widget.galleryItems[index];
     if (item.isVideo) {
@@ -127,7 +128,9 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
           setState(() {});
         }
       } catch (e) {
-        print("Error initializing video player for ${item.url}: $e");
+        if (kDebugMode) {
+          print("Error initializing video player for ${item.url}: $e");
+        }
         // Optionally handle the error in the UI
         _disposeVideoController(); // Clean up if initialization failed
         if (mounted) {
@@ -315,7 +318,8 @@ class _GalleryImageViewWrapperState extends State<GalleryImageViewWrapper> {
     return Padding(
       padding: const EdgeInsets.all(15),
       child: Hero(
-        tag: item.id, // Ensure Hero tag uses the unique ID
+        // Add a prefix to differentiate from thumbnail hero tags
+        tag: "main_view_${item.id}",
         child: Center(
           child: item.isVideo
               ? (isCurrentVideo

@@ -1,7 +1,6 @@
-library galleryimage;
+library;
 
-import 'dart:typed_data'; // Import for cache type
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart'
     as p; // Import path package for extension checking
@@ -38,7 +37,7 @@ class GalleryImage extends StatefulWidget {
   final Color closeIconBackgroundColor;
 
   const GalleryImage({
-    Key? key,
+    super.key,
     required this.urls, // Updated parameter name
     this.titleGallery,
     this.childAspectRatio = 1,
@@ -62,8 +61,7 @@ class GalleryImage extends StatefulWidget {
     this.closeWhenSwipeDown = false,
     this.closeIconColor = Colors.white,
     this.closeIconBackgroundColor = Colors.black,
-  })  : assert(numOfShowImages <= urls.length), // Updated assertion
-        super(key: key);
+  }) : assert(numOfShowImages <= urls.length);
   @override
   State<GalleryImage> createState() => _GalleryImageState();
 }
@@ -149,8 +147,8 @@ class _GalleryImageState extends State<GalleryImage> {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -213,7 +211,9 @@ class _GalleryImageState extends State<GalleryImage> {
       return _videoExtensions.contains(extension);
     } catch (e) {
       // Handle potential parsing errors if the URL is malformed
-      print("Error parsing URL $url: $e");
+      if (kDebugMode) {
+        print("Error parsing URL $url: $e");
+      }
       return false;
     }
   }
@@ -224,10 +224,14 @@ class _GalleryImageState extends State<GalleryImage> {
     for (var item in items) {
       final isVideo = _isVideoUrl(item); // Check if it's a video URL
       final index = items.indexOf(item); // Get index for unique ID
+
+      // Create a stable unique ID that doesn't change on each rebuild
+      // Using just hashCode and index without timestamp makes the ID more stable
+      final uniqueId = '${item.hashCode}_$index';
+
       galleryItems.add(
         GalleryItemModel(
-          // Create a unique ID using url and index for the Hero tag
-          id: '$item-$index',
+          id: uniqueId,
           url: item, // Use the updated 'url' field
           index: index,
           isVideo: isVideo, // Set the isVideo flag

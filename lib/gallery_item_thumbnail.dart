@@ -17,14 +17,13 @@ class GalleryItemThumbnail extends StatelessWidget {
   final Map<String, Uint8List> thumbnailCache;
 
   const GalleryItemThumbnail(
-      {Key? key,
+      {super.key,
       required this.galleryItem,
       this.onTap, // Make onTap nullable as it might be handled by parent
       required this.radius,
       required this.thumbnailCache, // Require the cache
       this.loadingWidget, // Make loading/error widgets nullable
-      this.errorWidget})
-      : super(key: key);
+      this.errorWidget});
 
   // Widget to display video thumbnail
   Widget _buildVideoThumbnail(BuildContext context) {
@@ -84,7 +83,7 @@ class GalleryItemThumbnail extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               // Ensure overlay respects radius
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(
                   radius), // Apply radius here too if needed
             ),
@@ -121,8 +120,8 @@ class GalleryItemThumbnail extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Hero(
-          // Ensure the tag is consistent with the full-screen view
-          tag: galleryItem.id,
+          // Ensure the tag is prefixed differently than the main view
+          tag: "thumbnail_${galleryItem.id}",
           child: galleryItem.isVideo
               ? _buildVideoThumbnail(context)
               : _buildImageThumbnail(context),
