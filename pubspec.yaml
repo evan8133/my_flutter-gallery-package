@@ -11,12 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   cached_network_image: ^3.4.1 # Updated version
-  video_player: ^2.9.5 # Added for video playback
-  chewie: ^1.11.3 # Added for video player UI controls
-  video_thumbnail: 
-    git: 
-      url: https://github.com/Shahidbangash/video_thumbnail.git 
-      ref: master 
+  video_player: ^2.10.1 # Added for video playback
+  chewie: ^1.13.0 # Added for video player UI controls
+  video_thumbnail: ^0.5.6
   path: ^1.9.1
 
 dev_dependencies:
