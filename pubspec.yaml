@@ -3,6 +3,7 @@ description: Flutter plugin that list of images from URLs allows you to display
   and zoomable multi image on iOS and Android.
 version: 2.0.1 # Consider bumping version after adding features
 homepage: https://github.com/BeshoyMelika/flutter-gallery-package
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
   sdk: '>=3.0.3 <4.0.0'
@@ -13,7 +14,8 @@ dependencies:
   cached_network_image: ^3.4.1 # Updated version
   video_player: ^2.10.1 # Added for video playback
   chewie: ^1.13.0 # Added for video player UI controls
-  video_thumbnail: ^0.5.6
+  video_thumbnail: 
+    path: /Users/arivan-blackace/packages/video_thumbnail
   path: ^1.9.1
 
 dev_dependencies:
