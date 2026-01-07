@@ -560,9 +560,11 @@ packages:
   video_thumbnail:
     dependency: "direct main"
     description:
-      path: "/Users/arivan-blackace/packages/video_thumbnail"
-      relative: false
-    source: path
+      path: "."
+      ref: master
+      resolved-ref: bb6a3b868e9d79004ab8e1e8f7e20155f9c78b08
+      url: "https://github.com/evan8133/video_thumbnail.git"
+    source: git
     version: "0.5.3"
   vm_service:
     dependency: transitive

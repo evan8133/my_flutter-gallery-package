@@ -15,7 +15,11 @@ dependencies:
   video_player: ^2.10.1 # Added for video playback
   chewie: ^1.13.0 # Added for video player UI controls
   video_thumbnail: 
-    path: /Users/arivan-blackace/packages/video_thumbnail
+    # path: /Users/arivan-blackace/packages/video_thumbnail
+    git:
+      url: https://github.com/evan8133/video_thumbnail.git
+      ref: master
+    
   path: ^1.9.1
 
 dev_dependencies:
